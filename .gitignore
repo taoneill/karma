@@ -1,0 +1,18 @@
+# Ignore all dotfiles...
+.*
+# except for .gitignore
+!.gitignore
+!.classpath
+!.project
+
+# Ignore all classfiles
+*.class
+
+# Ignore bin
+bin
+/lib/*
+/target/*
+/.settings/*
+*/lib/*
+*/target/*
+*/.settings/*
