@@ -17,16 +17,22 @@ public class KarmaParty implements Runnable {
 		for (Player player : this.karma.getServer().getOnlinePlayers()) {
 			this.karma.msg(player, "It's a " + ChatColor.GREEN + "/karma" + ChatColor.GRAY + " party!");
 		}
+		String playerList = "";
 		for (String playerName : this.karma.getPlayers().keySet()) {
 			KarmaPlayer player = this.karma.getPlayers().get(playerName);
 			long activeInterval = System.currentTimeMillis() - player.getLastActivityTime();
 			int minutesAfk = (int) Math.floor(activeInterval/(1000*60));
-			if (minutesAfk < 15) {
+			Player p = this.karma.findPlayer(player.getName());
+			if (minutesAfk < 10) {
 				player.addKarma(1);
-				Player p = this.karma.findPlayer(player.getName());
 				this.karma.msg(p, "You gain " + ChatColor.GREEN + "1" + ChatColor.GRAY + " karma point.");
-				this.karma.getServer().getLogger().log(Level.INFO, "Karma> " + playerName + " gained 1 karma");
+				playerList += playerName + ", ";
+			} else {
+				this.karma.msg(p, "You missed out on " + ChatColor.GREEN + "1" + ChatColor.GRAY + " karma point because you were afk.");
 			}
+		}
+		if (!playerList.equals("")) {
+			this.karma.getServer().getLogger().log(Level.INFO, "Karma> " + playerList + "gained 1 karma");
 		}
 		
 		// save

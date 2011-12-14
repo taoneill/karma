@@ -31,9 +31,10 @@ public class Karma extends JavaPlugin {
 	private Random random = new Random();
 	
 	public void onDisable() {
-		players.clear();
 		this.getServer().getScheduler().cancelTasks(this);
-		
+		this.db.putAll();
+		players.clear();
+				
 		this.getServer().getLogger().log(Level.INFO, "Karma> Disabled.");
 	}
 
@@ -52,10 +53,7 @@ public class Karma extends JavaPlugin {
 		KarmaGroup recruit = new KarmaGroup("recruit", 0, builder, ChatColor.LIGHT_PURPLE);
 		
 		this.startGroup = recruit;
-		
-		// Load online players
-		this.getServer().getScheduler().scheduleSyncDelayedTask(this, new LoadPlayers(this));
-        
+				
         // Register events
         PluginManager manager = this.getServer().getPluginManager();
         
@@ -68,6 +66,9 @@ public class Karma extends JavaPlugin {
         manager.registerEvent(Type.PLAYER_CHAT, playerListener, Priority.Normal, this);
         manager.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
         
+        // Load online players
+		this.getServer().getScheduler().scheduleSyncDelayedTask(this, new LoadPlayers(this));
+                
         // Launch karma party train!!        
         this.getServer().getScheduler().scheduleSyncDelayedTask(this, new KarmaParty(this), this.getNextRandomKarmaPartyDelay());
         
@@ -88,84 +89,113 @@ public class Karma extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		try {
-			if (sender instanceof Player) {
-				Player player = (Player) sender;
-				if (command.getName().equals("karma")) {
-					KarmaPlayer karmaPlayer = this.players.get(player.getName());
+			if (command.getName().equals("karma") || command.getName().equals("k")) {
+				if (args.length == 0 && sender instanceof Player) {
+					KarmaPlayer karmaPlayer = this.players.get(((Player)sender).getName());
 					if (karmaPlayer != null) {
-						if (args.length == 0) {
-							this.msg(player, "You have " + ChatColor.GREEN + karmaPlayer.getKarmaPoints() + ChatColor.GRAY + " karma points. Current rank: " 
-									+ this.getPlayerGroupString(karmaPlayer) + ". Next rank: " + this.getPlayerNextGroupString(karmaPlayer) + ".");
-							return true;
-						} else if (args.length == 1 && (args[0].equals("ranks") || args[0].equals("rank") || args[0].equals("groups"))) {
-							String ranksString = "Ranks: ";
-							KarmaGroup group = this.startGroup;
-							while (group != null) {
-								ranksString += group.getGroupName() + "(" + ChatColor.GREEN + group.getKarmaPoints() + ChatColor.GRAY + ")";
-								if (group.getNext() != null) ranksString += ChatColor.WHITE + " -> " + ChatColor.GRAY;
-								group = group.getNext();
-							}
-							this.msg(player, ranksString);
-							return true;
-						} else if (args.length == 1) {
-							List<Player> matches = this.getServer().matchPlayer(args[0]);
-							if (!matches.isEmpty()) {
-								Player playerTarget = matches.get(0);
-								KarmaPlayer karmaTarget = this.players.get(playerTarget.getName());
-								if (karmaTarget != null) {
-									this.msg(player, ChatColor.WHITE + playerTarget.getName() + ChatColor.GRAY + " has " + ChatColor.GREEN 
-										+ karmaTarget.getKarmaPoints() + ChatColor.GRAY + " karma points.");
-									return true;
-								}
-							}
-						} else if (args.length == 3) {
-							String action = args[0];
-							String target = args[1];
-							int amount = Integer.parseInt(args[2]);
-							
-							List<Player> matches = this.getServer().matchPlayer(target);
-							if ((action.equals("gift") || action.equals("give")) && !matches.isEmpty() && amount > 0 && karmaPlayer.getKarmaPoints() >= amount) {
-								
-								Player playerTarget = matches.get(0);
-								KarmaPlayer karmaTarget = this.getPlayers().get(playerTarget.getName());
-								
-								if (karmaTarget != null && !player.getName().equals(playerTarget.getName())) {
-									this.msg(player, "You gave " + ChatColor.WHITE + playerTarget.getName() + ChatColor.GREEN + " " + amount + ChatColor.GRAY
-											+" karma points. How generous!");
-									this.msg(playerTarget, "You received " + ChatColor.GREEN + amount + ChatColor.GRAY +" karma points from " + ChatColor.WHITE 
-											+ player.getName() + ChatColor.GRAY + ". How generous!");
-									
-									karmaPlayer.removeKarma(amount);
-									karmaTarget.addKarma(amount);
-									this.db.put(karmaPlayer);
-									this.db.put(karmaTarget);
-									
-									this.getServer().getLogger().log(Level.INFO, "Karma> " + player.getName() + " gave " + amount + " points to " + playerTarget.getName());
-									
-									return true;
-								}
-							} else if (action.equals("set") && !matches.isEmpty() && amount > 0 && 
-									(player.hasPermission("karma.set")
-											|| (this.permissionHandler != null && this.permissionHandler.has(player, "karma.set")))) {
-								
-								return this.setAmount(matches, amount);
-							}
-						}
+						this.msg(sender, "You have " + ChatColor.GREEN + karmaPlayer.getKarmaPoints() + ChatColor.GRAY + " karma points. Current rank: " 
+								+ this.getPlayerGroupString(karmaPlayer) + ". Next rank: " + this.getPlayerNextGroupString(karmaPlayer) + ".");
+						return true;
 					}
-				}
-			} else if (sender instanceof ConsoleCommandSender) {
-				if (args.length == 3) {
+				} else if (args.length == 1 && (args[0].equals("ranks") || args[0].equals("rank") || args[0].equals("groups"))) {
+					String ranksString = "Ranks: ";
+					KarmaGroup group = this.startGroup;
+					while (group != null) {
+						ranksString += group.getGroupName() + "(" + ChatColor.GREEN + group.getKarmaPoints() + ChatColor.GRAY + ")";
+						if (group.getNext() != null) ranksString += ChatColor.WHITE + " -> " + ChatColor.GRAY;
+						group = group.getNext();
+					}
+					this.msg(sender, ranksString);
+					return true;
+				} else if (args.length == 1) {
+					List<Player> matches = this.getServer().matchPlayer(args[0]);
+					if (!matches.isEmpty()) {
+						Player playerTarget = matches.get(0);
+						KarmaPlayer karmaTarget = this.players.get(playerTarget.getName());
+						if (karmaTarget != null) {
+							this.msg(sender, ChatColor.WHITE + playerTarget.getName() + ChatColor.GRAY + " has " + ChatColor.GREEN 
+								+ karmaTarget.getKarmaPoints() + ChatColor.GRAY + " karma points.");
+							return true;
+						} else {
+							this.msg(sender, "Couldn't find target.");
+							return true;
+						}						
+					} else {
+						this.msg(sender, "Couldn't find player.");
+						return true;
+					}
+				} else if (args.length == 2 && (args[0].equals("build") || args[0].equals("builder"))
+						&& (!(sender instanceof Player) || Karma.permissionHandler.has((Player)sender, "karma.builder"))) {
+					List<Player> matches = this.getServer().matchPlayer(args[1]);
+					KarmaGroup builder = this.startGroup.getNext();
+					if (!matches.isEmpty()) {
+						Player playerTarget = matches.get(0);
+						KarmaPlayer karmaTarget = this.players.get(playerTarget.getName());
+						if (karmaTarget != null && karmaTarget.getKarmaPoints() < builder.getKarmaPoints()) {
+							karmaTarget.addKarma(builder.getKarmaPoints() - karmaTarget.getKarmaPoints());
+							this.msg(playerTarget, "Promoted to builder.");
+							return true;
+						} else {
+							this.msg(sender, "Couldn't find target or target already builder.");
+							return true;
+						}						
+					} else {
+						this.msg(sender, "Couldn't find player.");
+						return true;
+					}
+				} else if (args.length == 3) {
 					String action = args[0];
 					String target = args[1];
 					int amount = Integer.parseInt(args[2]);
 					
 					List<Player> matches = this.getServer().matchPlayer(target);
-					if (action.equals("set") && !matches.isEmpty() && amount > 0) {
+					KarmaPlayer karmaPlayer = null;
+					if (sender instanceof Player) {
+						karmaPlayer = this.players.get(((Player)sender).getName());
+					}
+					if ((action.equals("gift") || action.equals("give")) && !matches.isEmpty() && amount > 0 
+							&& (karmaPlayer == null || karmaPlayer.getKarmaPoints() >= amount)) {
+						
+						Player playerTarget = matches.get(0);
+						KarmaPlayer karmaTarget = this.getPlayers().get(playerTarget.getName());
+						
+						if (karmaTarget != null && !sender.getName().equals(playerTarget.getName())) {
+							
+							String gifterName = "server";
+							if (karmaPlayer != null) {
+								gifterName = ((Player)sender).getName();
+								karmaPlayer.removeKarma(amount);
+								this.db.put(karmaPlayer);
+								this.msg(sender, "You gave " + ChatColor.WHITE + playerTarget.getName() + ChatColor.GREEN + " " + amount + ChatColor.GRAY
+										+" karma points. How generous!");
+							}								
+							
+							karmaTarget.addKarma(amount);
+							this.db.put(karmaTarget);
+							this.msg(playerTarget, "You received " + ChatColor.GREEN + amount + ChatColor.GRAY + " karma points from " + ChatColor.WHITE 
+									+ gifterName + ChatColor.GRAY + ". How generous!");
+							
+							this.getServer().getLogger().log(Level.INFO, "Karma> " + gifterName + " gave " + amount + " points to " + playerTarget.getName());
+							
+							return true;
+						} else {
+							this.getServer().getLogger().log(Level.WARNING, "Karma> Couldn't find target or targetted self.");
+						}
+					} else if (action.equals("set") && !matches.isEmpty() && amount >= 0 
+							&& (!(sender instanceof Player) || (Karma.permissionHandler.has((Player)sender, "karma.set")))) {
+					
 						return this.setAmount(matches, amount);
+					} else {
+						this.getServer().getLogger().log(Level.WARNING, "Karma> Command not recognized.");
 					}
 				}
+				
+			} else {
+				this.getServer().getLogger().log(Level.WARNING, "Karma> Can't recognize command.");
 			}
 		} catch (Exception e) {
+			this.getServer().getLogger().log(Level.WARNING, "Karma> Exception occured. " + e.toString());
+			e.printStackTrace();
 			return false;
 		}
 		return false;
@@ -232,7 +262,7 @@ public class Karma extends JavaPlugin {
 		int karmaToNext = 0;
 		while (group != null) {
 			String perm = "karma." + group.getGroupName();
-			if (player.hasPermission(perm) || (Karma.permissionHandler != null && Karma.permissionHandler.has(player, perm))) {
+			if (Karma.permissionHandler.has(player, perm)) {
 				initialKarma = group.getKarmaPoints();
 				if (group.getNext() != null) {
 					karmaToNext = group.getNext().getKarmaPoints() - group.getKarmaPoints(); 
@@ -256,9 +286,10 @@ public class Karma extends JavaPlugin {
 		while (group != null && playerForPromotion != null) {
 			String perm = "karma." + group.getGroupName();
 			if (before < group.getKarmaPoints() && after >= group.getKarmaPoints()
-					&& !playerForPromotion.hasPermission(perm) && !(Karma.permissionHandler != null && Karma.permissionHandler.has(playerForPromotion, perm))) {
+					&& !Karma.permissionHandler.has(playerForPromotion, perm)) {
 				// promotion
 				this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "manpromote " + playerName + " " + group.getGroupName());
+				this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mansave");
 				for (Player player : this.getServer().getOnlinePlayers()) {
 					this.msg(player, "Good karma! " + ChatColor.WHITE + playerName + ChatColor.GRAY + " promoted to " + group.getGroupName() + ".");
 				}
@@ -275,9 +306,10 @@ public class Karma extends JavaPlugin {
 			if (group.getNext() != null && before >= group.getNext().getKarmaPoints() && after < group.getNext().getKarmaPoints()) {
 				String perm = "karma." + group.getNext().getGroupName();
 				
-				if (playerForDemotion.hasPermission(perm) || (Karma.permissionHandler != null && Karma.permissionHandler.has(playerForDemotion, perm))) {
+				if (Karma.permissionHandler.has(playerForDemotion, perm)) {
 					// demotion
 					this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mandemote " + playerName + " " + group.getGroupName());
+					this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mansave");
 					for (Player player : this.getServer().getOnlinePlayers()) {
 						this.msg(player, "Bad karma! " + ChatColor.WHITE + playerName + ChatColor.GRAY + " demoted to " + group.getGroupName() + ".");
 					}
@@ -289,7 +321,7 @@ public class Karma extends JavaPlugin {
 		}	
 	}
 	
-	public void msg(Player destination, String message) {
+	public void msg(CommandSender destination, String message) {
 		destination.sendMessage(ChatColor.DARK_PURPLE + "Karma> " + ChatColor.GRAY + replaceGroupNames(message));
 	}	
 	
@@ -307,7 +339,7 @@ public class Karma extends JavaPlugin {
 		KarmaGroup group = this.startGroup;
 		while (group != null) {
 			String perm = "karma." + group.getGroupName();
-			if (!player.hasPermission(perm) && !(Karma.permissionHandler != null && Karma.permissionHandler.has(player, perm))) {
+			if (!Karma.permissionHandler.has(player, perm)) {
 				return group.getGroupName() + " ("  + ChatColor.GREEN +  group.getKarmaPoints() + ChatColor.GRAY + ")";
 			}
 			group = group.getNext();
@@ -318,10 +350,10 @@ public class Karma extends JavaPlugin {
 	private String getPlayerGroupString(KarmaPlayer karmaPlayer) {
 		Player player = this.findPlayer(karmaPlayer.getName());
 		KarmaGroup group = this.startGroup;
-		KarmaGroup lastGroup = null;
+		KarmaGroup lastGroup = null; // first group is recruit
 		while (group != null) {
 			String perm = "karma." + group.getGroupName();
-			if (!player.hasPermission(perm) && !(Karma.permissionHandler != null && Karma.permissionHandler.has(player, perm))) {
+			if (!Karma.permissionHandler.has(player, perm)) {
 				return lastGroup.getGroupName() + " (" + ChatColor.GREEN + lastGroup.getKarmaPoints() + ChatColor.GRAY + ")";
 			}
 			lastGroup = group;
@@ -343,8 +375,9 @@ public class Karma extends JavaPlugin {
 	}
 	
 	public int getNextRandomKarmaPartyDelay() {
-		// on average 30, between 15 min and 45 min - 20 ticks/second, 60 seconds/min
-		int minutes = 15 + this.random.nextInt(30);
+		// on average 20, between 10 min and 30 min 
+		int minutes = 10 + this.random.nextInt(20);
+		// 20 ticks/second, 60 seconds/min
 		int ticks = minutes * 20 * 60;
 		this.getServer().getLogger().log(Level.INFO, "Karma> Next karma party in " + minutes + " minutes or " + ticks + " ticks.");
 		return ticks;

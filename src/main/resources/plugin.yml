@@ -8,7 +8,7 @@ main: bukkit.tommytony.karma.Karma
 
 commands:
   karma:
-    description: Use /karma to check your karma points. Use /karma <person> to see points of others. Use /karma gift <person> <amount> to give karma to another player. Use /karma ranks to enumerate ranks. Use /k as an alias.
-    usage: Karma> Use /karma to check your karma points. Use /karma <person> to see points of others. Use /karma gift <person> <amount> to give karma to another player. Use /karma ranks to enumerate ranks. Use /k as an alias.
+    description: The main karma command
+    usage: Karma> Use /karma to check your karma points. Use /karma <person> to see points of others. Use /karma gift <person> <amount> to give karma to another player. Use /karma ranks to enumerate ranks. Use /karma builder <person> to give another player build rights. Use /k as an alias.
     aliases: k
     permission:
