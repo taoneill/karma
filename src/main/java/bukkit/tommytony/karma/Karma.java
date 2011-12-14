@@ -107,6 +107,8 @@ public class Karma extends JavaPlugin {
 					}
 					this.msg(sender, ranksString);
 					return true;
+				} else if (args.length == 1 && (args[0].equals("?") || args[0].equals("help"))) {
+					return false;
 				} else if (args.length == 1) {
 					List<Player> matches = this.getServer().matchPlayer(args[0]);
 					if (!matches.isEmpty()) {
