@@ -28,12 +28,15 @@ public class KarmaPlayer {
 	}
 	
 	public void removeKarma(int pointsToRemove) {
-		if (pointsToRemove > 0 && pointsToRemove <= this.karmaPoints) {
+		if (pointsToRemove > this.karmaPoints) {
+			pointsToRemove = this.karmaPoints;
+		}
+		if (pointsToRemove > 0) {
 			int before = this.karmaPoints;
 			this.karmaPoints -= pointsToRemove;
 			this.karma.checkForDemotion(name, before, this.karmaPoints);
 			this.karma.getKarmaDatabase().put(this);
-		}		
+		}	
 	}
 
 	public String getName() {
