@@ -127,7 +127,7 @@ public class Karma extends JavaPlugin {
 						return true;
 					}
 				} else if (args.length == 2 && (args[0].equals("build") || args[0].equals("builder"))
-						&& (!(sender instanceof Player) || Karma.permissionHandler.has((Player)sender, "karma.builder"))) {
+						&& (!(sender instanceof Player) || Karma.permissionHandler.has((Player)sender, "karma.zonemaker"))) {
 					List<Player> matches = this.getServer().matchPlayer(args[1]);
 					KarmaGroup builder = this.startGroup.getNext();
 					if (!matches.isEmpty()) {
@@ -145,47 +145,63 @@ public class Karma extends JavaPlugin {
 						this.msg(sender, "Couldn't find player.");
 						return true;
 					}
-				} else if (args.length == 3) {
-					String action = args[0];
+				} else if (args.length == 2 && (args[0].equals("gift") || args[0].equals("give"))
+						&& (!(sender instanceof Player) || Karma.permissionHandler.has((Player)sender, "karma.zonemaker"))) {
 					String target = args[1];
-					int amount = Integer.parseInt(args[2]);
 					
 					List<Player> matches = this.getServer().matchPlayer(target);
-					KarmaPlayer karmaPlayer = null;
+					KarmaPlayer karmaGiver = null;
 					if (sender instanceof Player) {
-						karmaPlayer = this.players.get(((Player)sender).getName());
+						karmaGiver = this.players.get(((Player)sender).getName());
 					}
-					if ((action.equals("gift") || action.equals("give")) && !matches.isEmpty() && amount > 0 
-							&& (karmaPlayer == null || karmaPlayer.getKarmaPoints() >= amount)) {
-						
+					
+					if (karmaGiver == null || karmaGiver.getKarmaPoints() > 0) {
 						Player playerTarget = matches.get(0);
 						KarmaPlayer karmaTarget = this.getPlayers().get(playerTarget.getName());
 						
 						if (karmaTarget != null && !sender.getName().equals(playerTarget.getName())) {
 							
 							String gifterName = "server";
-							if (karmaPlayer != null) {
+							if (karmaGiver != null) {
 								gifterName = ((Player)sender).getName();
-								karmaPlayer.removeKarma(amount);
-								this.db.put(karmaPlayer);
-								this.msg(sender, "You gave " + ChatColor.WHITE + playerTarget.getName() + ChatColor.GREEN + " " + amount + ChatColor.GRAY
-										+" karma points. How generous!");
+								if (karmaGiver.canGift()) {
+									karmaGiver.removeKarma(1);
+									karmaGiver.updateLastGiftTime();
+									this.db.put(karmaGiver);
+									this.msg(sender, "You gave " + ChatColor.WHITE + playerTarget.getName() + ChatColor.GREEN + " 1"+ ChatColor.GRAY
+											+" karma point. How generous!");
+								} else {
+									this.msg(sender, "You can only make a gift once per hour!");
+									return true;
+								}
 							}								
 							
-							karmaTarget.addKarma(amount);
+							karmaTarget.addKarma(1);
 							this.db.put(karmaTarget);
-							this.msg(playerTarget, "You received " + ChatColor.GREEN + amount + ChatColor.GRAY + " karma points from " + ChatColor.WHITE 
+							this.msg(playerTarget, "You received " + ChatColor.GREEN + "1" + ChatColor.GRAY + " karma point from " + ChatColor.WHITE 
 									+ gifterName + ChatColor.GRAY + ". How generous!");
 							
-							this.getServer().getLogger().log(Level.INFO, "Karma> " + gifterName + " gave " + amount + " points to " + playerTarget.getName());
+							this.getServer().getLogger().log(Level.INFO, "Karma> " + gifterName + " gave a point to " + playerTarget.getName());
 							
 							return true;
 						} else {
 							this.getServer().getLogger().log(Level.WARNING, "Karma> Couldn't find target or targetted self.");
 						}
-					} else if (action.equals("set") && !matches.isEmpty() && amount >= 0 
-							&& (!(sender instanceof Player) || (Karma.permissionHandler.has((Player)sender, "karma.set")))) {
+					}
+				} else if (args.length == 3) {
+					String action = args[0];
+					String target = args[1];
 					
+					if (action.equals("give") || action.equals("gift")) {
+						this.msg(sender, "Use /karma " + action + " <person> to donate " + ChatColor.GREEN + "1" + ChatColor.GRAY + " karma point.");
+						return true;
+					}
+					
+					int amount = Integer.parseInt(args[2]);
+					
+					List<Player> matches = this.getServer().matchPlayer(target);
+					if (action.equals("set") && !matches.isEmpty() && amount >= 0 
+							&& (!(sender instanceof Player) || (Karma.permissionHandler.has((Player)sender, "karma.set")))) {
 						return this.setAmount(matches, amount);
 					} else {
 						this.getServer().getLogger().log(Level.WARNING, "Karma> Command not recognized.");
@@ -248,7 +264,7 @@ public class Karma extends JavaPlugin {
     	} else {
     		// create player
     		int initialKarma = this.getInitialKarma(player);
-    		KarmaPlayer karmaPlayer = new KarmaPlayer(this, player.getName(), initialKarma, System.currentTimeMillis());
+    		KarmaPlayer karmaPlayer = new KarmaPlayer(this, player.getName(), initialKarma, System.currentTimeMillis(), 0);
     		this.players.put(player.getName(), karmaPlayer);
     		this.db.put(karmaPlayer);
     		

@@ -7,12 +7,15 @@ public class KarmaPlayer {
 	private final String name;
 	private int karmaPoints;
 	private long lastActivityTime;
+	private long lastGift;
+	private long lastPrize;
 
-	public KarmaPlayer(Karma karma, String name, int karmaPoints, long lastActivityTime) {
+	public KarmaPlayer(Karma karma, String name, int karmaPoints, long lastActivityTime, long lastGift) {
 		this.karma = karma;
 		this.name = name;
 		this.karmaPoints = karmaPoints;
 		this.lastActivityTime = lastActivityTime;
+		this.lastGift = lastGift;
 	}
 	
 	public void addKarma(int pointsToAdd) {
@@ -47,6 +50,19 @@ public class KarmaPlayer {
 
 	public void ping() {
 		this.lastActivityTime = System.currentTimeMillis(); 
+	}
+
+	public void updateLastGiftTime() {
+		this.lastGift = System.currentTimeMillis();
+	}
+	
+	public long getLastGiftTime() {
+		return lastGift;
+	}
+
+	public boolean canGift() {
+		long since = System.currentTimeMillis() - getLastGiftTime();
+		return since > 3600*1000;
 	}
 	
 }

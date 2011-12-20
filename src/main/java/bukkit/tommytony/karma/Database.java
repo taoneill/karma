@@ -43,7 +43,7 @@ public class Database {
 	            Statement stat = conn.createStatement();
 	            ResultSet result = stat.executeQuery("select * from players where name='" + playerName + "'");
 	            if (result.next()) {
-	            	karmaPlayer = new KarmaPlayer(this.karma, playerName, result.getInt("karma"), result.getLong("lastactive"));
+	            	karmaPlayer = new KarmaPlayer(this.karma, playerName, result.getInt("karma"), result.getLong("lastactive"), result.getLong("lastgift"));
 	            }
 	            result.close();
 	            stat.close();
@@ -71,7 +71,7 @@ public class Database {
 	            	// insert
 	            	stat.executeUpdate(
 		            		"insert into players values ('" + karmaPlayer.getName() + "', " 
-		            		+ karmaPlayer.getKarmaPoints() + ", " + karmaPlayer.getLastActivityTime() + ")"); 
+		            		+ karmaPlayer.getKarmaPoints() + ", " + karmaPlayer.getLastActivityTime()+ ", " + karmaPlayer.getLastGiftTime() + ", 0)"); 
 	            }
 	            stat.close();
 	            conn.close();
@@ -99,15 +99,41 @@ public class Database {
 		
 		if (this.sqlite()) {
 			try {
-	            Connection conn = this.getConnection();
-	            Statement stat = conn.createStatement();
-	            stat.executeUpdate("create table if not exists players (name text, karma numeric, lastactive numeric)");
-	            stat.close();
-	            conn.close();
+	            Connection connection = this.getConnection();
+	            Statement statement = connection.createStatement();
+	            statement.executeUpdate("create table if not exists players (name text, karma numeric, lastactive numeric)");
+	            
+	            boolean updatedSchema = true;
+	            try {
+	            	Statement alterStatement = connection.createStatement();
+	            	alterStatement.executeUpdate("alter table players add column lastgift numeric");
+	            } catch (SQLException e) {
+	            	updatedSchema = false;
+	            }
+	            
+	            this.addColumn(connection, "lastgift numeric");
+	            this.addColumn(connection, "lastprize numeric");     
+	            
+	            statement.close();
+	            connection.close();
 	        } catch (SQLException e) {
 	        	this.karma.getServer().getLogger().log(Level.WARNING, "Karma> Error while intilializing database. " + e.toString());
 	        }	
 		}
+	}
+	
+	private void addColumn(Connection connection, String newColumn) {
+		 boolean updatedSchema = true;
+         try {
+         	Statement alterStatement = connection.createStatement();
+         	alterStatement.executeUpdate("alter table players add column " + newColumn);
+         } catch (SQLException e) {
+         	updatedSchema = false;
+         }
+         
+         if (updatedSchema) {
+         	this.karma.getServer().getLogger().log(Level.INFO, "Karma> Table schema updated to add " + newColumn + ".");
+         }
 	}
 
 	private boolean sqlite() {
