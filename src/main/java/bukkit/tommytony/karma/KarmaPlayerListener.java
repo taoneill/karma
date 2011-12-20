@@ -1,7 +1,5 @@
 package bukkit.tommytony.karma;
 
-import java.util.logging.Level;
-
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
@@ -28,8 +26,6 @@ public class KarmaPlayerListener extends PlayerListener {
     	if (player != null) {
     		this.karma.getKarmaDatabase().put(player);	// save latest changes
     		this.karma.getPlayers().remove(event.getPlayer().getName());	
-    	} else {
-    		this.karma.getServer().getLogger().log(Level.WARNING, "Karma> Can't find " + playerName + " on quit event.");
     	}
     }
     
@@ -38,9 +34,7 @@ public class KarmaPlayerListener extends PlayerListener {
     	String playerName = event.getPlayer().getName();
     	if (this.karma.getPlayers().containsKey(playerName)) {
     		this.karma.getPlayers().get(playerName).ping();
-    	} else {
-    		this.karma.getServer().getLogger().log(Level.WARNING, "Karma> Can't find " + playerName + " on chat event.");
-    	}    	
+    	}
     }
     
     public void onPlayerMove(PlayerMoveEvent event) 
@@ -48,9 +42,7 @@ public class KarmaPlayerListener extends PlayerListener {
     	String playerName = event.getPlayer().getName();
     	if (this.karma.getPlayers().containsKey(playerName)) {
     		this.karma.getPlayers().get(playerName).ping();
-    	} else {
-    		this.karma.getServer().getLogger().log(Level.WARNING, "Karma> Can't find " + playerName + " on move event.");
-    	}   
+    	}
     }
 
 
