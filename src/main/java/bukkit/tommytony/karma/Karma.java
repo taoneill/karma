@@ -165,9 +165,8 @@ public class Karma extends JavaPlugin {
 							if (karmaGiver != null) {
 								gifterName = ((Player)sender).getName();
 								if (karmaGiver.canGift()) {
-									karmaGiver.removeKarma(1);
 									karmaGiver.updateLastGiftTime();
-									this.db.put(karmaGiver);
+									karmaGiver.removeKarma(1);
 									this.msg(sender, "You gave " + ChatColor.WHITE + playerTarget.getName() + ChatColor.GREEN + " 1"+ ChatColor.GRAY
 											+" karma point. How generous!");
 								} else {
@@ -177,7 +176,6 @@ public class Karma extends JavaPlugin {
 							}								
 							
 							karmaTarget.addKarma(1);
-							this.db.put(karmaTarget);
 							this.msg(playerTarget, "You received " + ChatColor.GREEN + "1" + ChatColor.GRAY + " karma point from " + ChatColor.WHITE 
 									+ gifterName + ChatColor.GRAY + ". How generous!");
 							

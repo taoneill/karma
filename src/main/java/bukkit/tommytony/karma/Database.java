@@ -66,6 +66,7 @@ public class Database {
 	            	stat.executeUpdate(
 		            		"update players set karma=" + karmaPlayer.getKarmaPoints() 
 		            		+ ", lastactive=" + karmaPlayer.getLastActivityTime()
+		            		+ ", lastgift=" + karmaPlayer.getLastGiftTime()
 		            		+ " where name='" + karmaPlayer.getName() + "'");
 	            } else {
 	            	// insert
