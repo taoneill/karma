@@ -321,7 +321,7 @@ public class Karma extends JavaPlugin {
 		while (group != null && playerForDemotion != null) {
 			if (group.getNext() != null && before >= group.getNext().getKarmaPoints() && after < group.getNext().getKarmaPoints()) {
 				String perm = "karma." + group.getNext().getGroupName();
-				
+				if (group.getGroupName().equals("recruit")) return; // Prevents players from being demoted to recruit
 				if (Karma.permissionHandler.has(playerForDemotion, perm)) {
 					// demotion
 					this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mandemote " + playerName + " " + group.getGroupName());
