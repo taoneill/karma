@@ -219,6 +219,9 @@ public class Karma extends JavaPlugin {
 
 	private boolean setAmount(List<Player> matches, int amount) {
 		Player playerTarget = matches.get(0);
+		return this.setAmount(playerTarget, amount);
+	}
+	private boolean setAmount(Player playerTarget, int amount) {
 		KarmaPlayer karmaTarget = this.getPlayers().get(playerTarget.getName());
 		if (karmaTarget != null && amount != karmaTarget.getKarmaPoints()) {
 			int before = karmaTarget.getKarmaPoints();
@@ -244,6 +247,15 @@ public class Karma extends JavaPlugin {
 			if (karmaPlayer != null) {
 	    		this.players.put(playerName, karmaPlayer);
 	    		
+	    		// check if player needs a builder promo, in case of emergency
+	    		if (karmaPlayer.getKarmaPoints() >= 10 && !permissionHandler.has(player, "karma.builder")) {
+	    			this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "manpromote " + playerName + " builder");
+					this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mansave");
+					for (Player playerOnline : this.getServer().getOnlinePlayers()) {
+						this.msg(playerOnline, "Buggy karma! " + ChatColor.WHITE + playerName + ChatColor.GRAY + " promoted to builder.");
+					}
+	    		}
+	    		
 	    		// check for last activity, remove one karma point per day off
 	    		long gone = System.currentTimeMillis() - karmaPlayer.getLastActivityTime();
 	    		int howManyDays = (int)Math.floor(gone/86400000L);
@@ -252,7 +264,6 @@ public class Karma extends JavaPlugin {
 	    			int before = karmaPlayer.getKarmaPoints();
 	    			karmaPlayer.removeKarma(howManyDays);
 	    			this.getServer().getLogger().log(Level.INFO, "Karma> " + player.getName() + " lost " + (before - karmaPlayer.getKarmaPoints()) + " karma points");
-	    			this.checkForDemotion(player.getName(), before, karmaPlayer.getKarmaPoints());
 	    		}    		
 	    		
 	    		// update last activity
