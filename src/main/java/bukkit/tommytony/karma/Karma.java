@@ -171,7 +171,7 @@ public class Karma extends JavaPlugin {
 											+" karma point. How generous!");
 								} else {
 									long since = (System.currentTimeMillis() - karmaGiver.getLastGiftTime())/1000;
-									this.msg(sender, "You need to wait " + ((3600 - since)/60) +  "minutes before gifting again.");
+									this.msg(sender, "You need to wait " + ((3600 - since)/60) +  " minutes before gifting again.");
 									return true;
 								}
 							}								
