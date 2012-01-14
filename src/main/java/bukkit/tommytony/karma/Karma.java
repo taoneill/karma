@@ -170,7 +170,8 @@ public class Karma extends JavaPlugin {
 									this.msg(sender, "You gave " + ChatColor.WHITE + playerTarget.getName() + ChatColor.GREEN + " 1"+ ChatColor.GRAY
 											+" karma point. How generous!");
 								} else {
-									this.msg(sender, "You can only make a gift once per hour!");
+									long since = (System.currentTimeMillis() - karmaGiver.getLastGiftTime())/1000;
+									this.msg(sender, "You need to wait " + ((3600 - since)/60) +  " minutes before gifting again.");
 									return true;
 								}
 							}								
