@@ -1,24 +1,27 @@
 package bukkit.tommytony.karma;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-public class KarmaPlayerListener extends PlayerListener {
+public class KarmaPlayerListener implements Listener {
 
 	private final Karma karma;
 
 	public KarmaPlayerListener(Karma karma) {
 		this.karma = karma;
 	}
-	
+
+	@EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) 
     {
     	this.karma.loadOrCreateKarmaPlayer(event.getPlayer());
     }
 
+	@EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) 
     {
     	String playerName = event.getPlayer().getName();
@@ -29,6 +32,7 @@ public class KarmaPlayerListener extends PlayerListener {
     	}
     }
     
+	@EventHandler
     public void onPlayerChat(PlayerChatEvent event) 
     {
     	String playerName = event.getPlayer().getName();
@@ -37,6 +41,7 @@ public class KarmaPlayerListener extends PlayerListener {
     	}
     }
     
+	@EventHandler
     public void onPlayerMove(PlayerMoveEvent event) 
     {
     	String playerName = event.getPlayer().getName();
@@ -44,6 +49,4 @@ public class KarmaPlayerListener extends PlayerListener {
     		this.karma.getPlayers().get(playerName).ping();
     	}
     }
-
-
 }

@@ -7,9 +7,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.tommytony.war.Team;
+import com.tommytony.war.War;
 import com.tommytony.war.Warzone;
 
-import bukkit.tommytony.war.War;
 
 public class KarmaParty implements Runnable {
 

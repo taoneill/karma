@@ -9,10 +9,7 @@ import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -58,13 +55,10 @@ public class Karma extends JavaPlugin {
         PluginManager manager = this.getServer().getPluginManager();
         
         KarmaWorldListener worldListener = new KarmaWorldListener(this);
-        manager.registerEvent(Type.WORLD_SAVE, worldListener, Priority.Normal, this);
+        manager.registerEvents(worldListener, this);
         
         KarmaPlayerListener playerListener = new KarmaPlayerListener(this);
-        manager.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
-        manager.registerEvent(Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
-        manager.registerEvent(Type.PLAYER_CHAT, playerListener, Priority.Normal, this);
-        manager.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
+        manager.registerEvents(playerListener, this);
         
         // Load online players
 		this.getServer().getScheduler().scheduleSyncDelayedTask(this, new LoadPlayers(this));
@@ -248,13 +242,25 @@ public class Karma extends JavaPlugin {
 			if (karmaPlayer != null) {
 	    		this.players.put(playerName, karmaPlayer);
 	    		
-	    		// check if player needs a builder promo, in case of emergency
-	    		if (karmaPlayer.getKarmaPoints() >= 10 && !permissionHandler.has(player, "karma.builder")) {
-	    			this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "manpromote " + playerName + " builder");
-					this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mansave");
-					for (Player playerOnline : this.getServer().getOnlinePlayers()) {
-						this.msg(playerOnline, "Buggy karma! " + ChatColor.WHITE + playerName + ChatColor.GRAY + " promoted to builder.");
-					}
+	    		// check if player needs a promo, in case perms got wiped
+	    		// BONUS: this lets you change perms systems without having
+	    		// to migrate - ex: just change the GM commands to bPerms 
+	    		KarmaGroup currentGroup = this.startGroup;
+	    		while (currentGroup != null) {
+		    		if (karmaPlayer.getKarmaPoints() >= currentGroup.getKarmaPoints() 
+		    				&& !permissionHandler.has(player, "karma." + currentGroup.getGroupName())
+		    				&& !(currentGroup.getNext() != null
+		    						&& karmaPlayer.getKarmaPoints() >= currentGroup.getNext().getKarmaPoints())) {
+		    			// either doesn't have a next rank or can't beat the next rank's k points, we found the right rank
+		    			this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "manpromote " + playerName + " " + currentGroup.getGroupName());
+						this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mansave");
+						for (Player playerOnline : this.getServer().getOnlinePlayers()) {
+							this.msg(playerOnline, "Sweet karma! " + ChatColor.WHITE + playerName + ChatColor.GRAY 
+									+ " promoted to " + currentGroup.getChatColor() + currentGroup.getGroupName() + ChatColor.GRAY + ".");
+						}
+		    		}
+		    		
+		    		currentGroup = currentGroup.getNext();
 	    		}
 	    		
 	    		// check for last activity, remove one karma point per day off

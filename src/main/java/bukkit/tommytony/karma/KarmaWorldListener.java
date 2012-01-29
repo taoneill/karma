@@ -1,9 +1,10 @@
 package bukkit.tommytony.karma;
 
-import org.bukkit.event.world.WorldListener;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldSaveEvent;
 
-public class KarmaWorldListener extends WorldListener {
+public class KarmaWorldListener implements Listener {
 
 	private final Karma karma;
 
@@ -11,8 +12,8 @@ public class KarmaWorldListener extends WorldListener {
 		this.karma = karma;
 	}
 
-	@Override
-    public void onWorldSave(WorldSaveEvent event) {
+	@EventHandler
+    public void onWorldSave(final WorldSaveEvent event) {
         this.karma.getKarmaDatabase().putAll();
     }
 }
