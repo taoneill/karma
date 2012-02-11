@@ -1,4 +1,4 @@
-package bukkit.tommytony.karma;
+package com.tommytony.karma;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
-
-import org.bukkit.Bukkit;
 
 public class Database {
 

@@ -6,8 +6,9 @@ import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.junit.Test;
 
-import bukkit.tommytony.karma.KarmaGroup;
-import bukkit.tommytony.karma.KarmaPlayer;
+import com.tommytony.karma.KarmaGroup;
+import com.tommytony.karma.KarmaPlayer;
+
 
 
 

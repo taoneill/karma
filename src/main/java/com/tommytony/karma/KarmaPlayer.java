@@ -1,4 +1,4 @@
-package bukkit.tommytony.karma;
+package com.tommytony.karma;
 
 public class KarmaPlayer {
 
@@ -28,13 +28,21 @@ public class KarmaPlayer {
 	}
 	
 	public void removeKarma(int pointsToRemove) {
+		this.removeKarma(pointsToRemove, false);
+	}
+
+	public void removeKarmaAutomatic(int pointsToRemove) {
+		this.removeKarma(pointsToRemove, true);
+	}
+	
+	private void removeKarma(int pointsToRemove, boolean automatic) {
 		if (pointsToRemove > this.karmaPoints) {
 			pointsToRemove = this.karmaPoints;
 		}
 		if (pointsToRemove > 0) {
 			int before = this.karmaPoints;
 			this.karmaPoints -= pointsToRemove;
-			this.karma.checkForDemotion(name, before, this.karmaPoints);
+			this.karma.checkForDemotion(name, before, this.karmaPoints, automatic);
 			this.karma.getKarmaDatabase().put(this);
 		}	
 	}
@@ -67,5 +75,6 @@ public class KarmaPlayer {
 		long since = System.currentTimeMillis() - getLastGiftTime();
 		return since > 3600*1000;
 	}
+
 	
 }

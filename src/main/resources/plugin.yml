@@ -4,7 +4,7 @@ description: Karmic auto-ranking
 author: tommytony
 website: https://github.com/taoneill/karma
 
-main: bukkit.tommytony.karma.Karma
+main: com.tommytony.karma.Karma
 
 commands:
   karma:

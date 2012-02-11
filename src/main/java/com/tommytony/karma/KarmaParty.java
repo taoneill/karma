@@ -1,4 +1,4 @@
-package bukkit.tommytony.karma;
+package com.tommytony.karma;
 
 import java.util.Random;
 import java.util.logging.Level;

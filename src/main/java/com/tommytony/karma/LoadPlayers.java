@@ -1,4 +1,4 @@
-package bukkit.tommytony.karma;
+package com.tommytony.karma;
 
 import org.bukkit.entity.Player;
 

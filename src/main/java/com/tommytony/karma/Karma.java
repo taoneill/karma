@@ -1,4 +1,4 @@
-package bukkit.tommytony.karma;
+package com.tommytony.karma;
 
 import java.util.HashMap;
 import java.util.List;
@@ -216,6 +216,7 @@ public class Karma extends JavaPlugin {
 		Player playerTarget = matches.get(0);
 		return this.setAmount(playerTarget, amount);
 	}
+	
 	private boolean setAmount(Player playerTarget, int amount) {
 		KarmaPlayer karmaTarget = this.getPlayers().get(playerTarget.getName());
 		if (karmaTarget != null && amount != karmaTarget.getKarmaPoints()) {
@@ -269,7 +270,7 @@ public class Karma extends JavaPlugin {
 	    		
 	    		if (howManyDays > 0) {
 	    			int before = karmaPlayer.getKarmaPoints();
-	    			karmaPlayer.removeKarma(howManyDays);
+	    			karmaPlayer.removeKarmaAutomatic(howManyDays);
 	    			this.getServer().getLogger().log(Level.INFO, "Karma> " + player.getName() + " lost " + (before - karmaPlayer.getKarmaPoints()) + " karma points");
 	    		}    		
 	    		
@@ -333,13 +334,13 @@ public class Karma extends JavaPlugin {
 		}		
 	}
 
-	public void checkForDemotion(String playerName, int before, int after) {
+	public void checkForDemotion(String playerName, int before, int after, boolean automatic) {
 		KarmaGroup group = this.startGroup;
 		Player playerForDemotion = this.findPlayer(playerName);
 		while (group != null && playerForDemotion != null) {
 			if (group.getNext() != null && before >= group.getNext().getKarmaPoints() && after < group.getNext().getKarmaPoints()) {
 				String perm = "karma." + group.getNext().getGroupName();
-				if (group.getGroupName().equals("recruit")) return; // Prevents players from being demoted to recruit
+				if (group.getGroupName().equals("recruit") && automatic) return; // Prevents players from being demoted to recruit
 				if (Karma.permissionHandler.has(playerForDemotion, perm)) {
 					// demotion
 					this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "mandemote " + playerName + " " + group.getGroupName());

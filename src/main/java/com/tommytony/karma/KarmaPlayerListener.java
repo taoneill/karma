@@ -1,4 +1,4 @@
-package bukkit.tommytony.karma;
+package com.tommytony.karma;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
