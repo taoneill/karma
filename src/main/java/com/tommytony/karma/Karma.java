@@ -1,11 +1,13 @@
 package com.tommytony.karma;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,7 +26,7 @@ public class Karma extends JavaPlugin {
 	private Map<String, KarmaPlayer> players;
 	private Database db;
 	private KarmaGroup startGroup;
-	
+	private ArrayList<String> immunePlayers;
 	private Random random = new Random();
 	
 	public void onDisable() {
@@ -181,7 +183,20 @@ public class Karma extends JavaPlugin {
 							this.getServer().getLogger().log(Level.WARNING, "Karma> Couldn't find target or targetted self.");
 						}
 					}
-				} else if (args.length == 3) {
+				} else if (args.length == 2 && (args[0].equals("immune"))
+						&& (!(sender instanceof Player) || Karma.permissionHandler.has((Player)sender, "karma.immune"))) {
+					List<Player> matches = this.getServer().matchPlayer(args[1]);
+					if (!matches.isEmpty()) {
+						Player playerTarget = matches.get(0);
+						KarmaPlayer karmaTarget = this.players.get(playerTarget.getName());
+						if (karmaTarget != null) { immunePlayers.add(args[1]); }
+						else { this.msg(sender, "Player Not Found!"); }
+					
+					}
+					
+				}
+				
+				else if (args.length == 3) {
 					String action = args[0];
 					String target = args[1];
 					
@@ -270,8 +285,10 @@ public class Karma extends JavaPlugin {
 	    		
 	    		if (howManyDays > 0) {
 	    			int before = karmaPlayer.getKarmaPoints();
-	    			karmaPlayer.removeKarmaAutomatic(howManyDays);
-	    			this.getServer().getLogger().log(Level.INFO, "Karma> " + player.getName() + " lost " + (before - karmaPlayer.getKarmaPoints()) + " karma points");
+	    			if (!immunePlayers.contains(player.getName())) {
+	    				karmaPlayer.removeKarmaAutomatic(howManyDays);
+	    			    this.getServer().getLogger().log(Level.INFO, "Karma> " + player.getName() + " lost " + (before - karmaPlayer.getKarmaPoints()) + " karma points"); 
+	    			}
 	    		}    		
 	    		
 	    		// update last activity
