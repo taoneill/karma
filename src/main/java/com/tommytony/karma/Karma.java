@@ -1,11 +1,17 @@
 package com.tommytony.karma;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.logging.Level;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,23 +30,30 @@ public class Karma extends JavaPlugin {
 	private Map<String, KarmaPlayer> players;
 	private Database db;
 	private KarmaGroup startGroup;
-	
+	private ArrayList<String> immunePlayers;
 	private Random random = new Random();
+	private File immuneFile = new File("plugins/Karma/immuneplayers.txt");
 	
 	public void onDisable() {
 		this.getServer().getScheduler().cancelTasks(this);
 		this.db.putAll();
 		players.clear();
+		this.saveImmune();
 				
 		this.getServer().getLogger().log(Level.INFO, "Karma> Disabled.");
 	}
+
+	
 
 	public void onEnable() {
 		// Init data
 		this.players = new HashMap<String, KarmaPlayer>();
 		this.db = new Database(this);
 		this.db.initialize();
+		this.SetupConfigFiles();
 		this.setupPermissions();
+		this.readImmuneAndImport();
+		
 		
 		KarmaGroup greybeard = new KarmaGroup("greybeard", 2000, null, ChatColor.DARK_GREEN);
 		KarmaGroup moderator = new KarmaGroup("moderator", 1000, greybeard, ChatColor.DARK_AQUA);
@@ -79,6 +92,16 @@ public class Karma extends JavaPlugin {
 			}
 		}
 	}
+public void SetupConfigFiles() {
+		
+		if(!immuneFile.exists()){
+            try {
+                immuneFile.createNewFile();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+           }
+}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -181,7 +204,20 @@ public class Karma extends JavaPlugin {
 							this.getServer().getLogger().log(Level.WARNING, "Karma> Couldn't find target or targetted self.");
 						}
 					}
-				} else if (args.length == 3) {
+				} else if (args.length == 2 && (args[0].equals("immune"))
+						&& (!(sender instanceof Player) || Karma.permissionHandler.has((Player)sender, "karma.immune"))) {
+					List<Player> matches = this.getServer().matchPlayer(args[1]);
+					if (!matches.isEmpty()) {
+						Player playerTarget = matches.get(0);
+						KarmaPlayer karmaTarget = this.players.get(playerTarget.getName());
+						if (karmaTarget != null) { immunePlayers.add(args[1]); }
+						else { this.msg(sender, "Player Not Found!"); }
+					
+					}
+					
+				}
+				
+				else if (args.length == 3) {
 					String action = args[0];
 					String target = args[1];
 					
@@ -270,8 +306,10 @@ public class Karma extends JavaPlugin {
 	    		
 	    		if (howManyDays > 0) {
 	    			int before = karmaPlayer.getKarmaPoints();
-	    			karmaPlayer.removeKarmaAutomatic(howManyDays);
-	    			this.getServer().getLogger().log(Level.INFO, "Karma> " + player.getName() + " lost " + (before - karmaPlayer.getKarmaPoints()) + " karma points");
+	    			if (!immunePlayers.contains(player.getName())) {
+	    				karmaPlayer.removeKarmaAutomatic(howManyDays);
+	    			    this.getServer().getLogger().log(Level.INFO, "Karma> " + player.getName() + " lost " + (before - karmaPlayer.getKarmaPoints()) + " karma points"); 
+	    			}
 	    		}    		
 	    		
 	    		// update last activity
@@ -407,6 +445,49 @@ public class Karma extends JavaPlugin {
 			}
 		}
 		return null;
+	}
+	
+	private void saveImmune() {
+	 
+	 StringBuilder sb = new StringBuilder();
+	 for (String s : immunePlayers)
+	 {
+	     sb.append(s);
+	     sb.append("\n");
+	 }
+
+	String immuneList = sb.toString();
+	
+     try {
+    	 BufferedWriter writer = new BufferedWriter(new PrintWriter(immuneFile));
+		writer.write(immuneList);
+		writer.close();
+	} catch (Exception e) {
+		this.getServer().getLogger().log(Level.WARNING, "Karma> Exception occured. " + e.toString());
+		e.printStackTrace();
+		
+	}
+     
+     
+	
+	}
+	
+	private void readImmuneAndImport() {
+		try {
+		      Scanner s = new Scanner(immuneFile);
+		      
+		      while (s.hasNextLine()) {
+		    	  String players = s.nextLine();
+		    	  immunePlayers.add(players);
+		      } 
+		}  
+		
+		catch (FileNotFoundException e) {
+			this.getServer().getLogger().log(Level.WARNING, "Karma> Exception occured. " + e.toString());
+			e.printStackTrace();
+		    }
+			
+			
 	}
 	
 	public int getNextRandomKarmaPartyDelay() {
