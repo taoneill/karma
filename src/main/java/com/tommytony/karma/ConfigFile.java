@@ -37,7 +37,7 @@ public class ConfigFile {
 	
 	public void create() throws FileNotFoundException {
 		Formatter writer = new Formatter(new File("plugins" + sep + "karma" + sep + "config.dat"));
-		writer.format("greybeard;%d;none;DarkGreen\n", 2000);
+		writer.format("greybeard;%d;null;DarkGreen\n", 2000);
 		writer.format("moderator;%d;greybeard;DarkAqua\n", 1000);
 		writer.format("minimod;%d;moderator;Aqua\n", 500);
 		writer.format("zonemaker;%d;minimod;Gold\n", 100);
