@@ -1,5 +1,7 @@
 package com.tommytony.karma;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -57,8 +59,16 @@ public class KarmaParty implements Runnable {
 		}
 
 		// save
-		this.karma.getKarmaDatabase().putAll();
-
+		//this.karma.getKarmaDatabase().putAll();
+        //The step above is redundant, it isn't needed, just laggy, Want a better implementation?
+		//I'll give a better example
+		ArrayDeque<KarmaPlayer> karmaPlayersSave = new ArrayDeque<KarmaPlayer>(this.karma.getPlayers().values());
+		//save stuff
+		this.karma.getServer().getScheduler().scheduleSyncDelayedTask(this.karma, new
+				PutValuesInDBTask(new ArrayDeque<KarmaPlayer>(this.karma.getPlayers().values()), this.karma),
+				5000L);
+		//way less laggy implementation!
+		
 		// schedule next karma party
 		this.karma
 				.getServer()
