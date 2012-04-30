@@ -3,6 +3,7 @@ package com.tommytony.karma;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Formatter;
+import java.util.PriorityQueue;
 import java.util.Scanner;
 
 import org.bukkit.ChatColor;
@@ -11,10 +12,10 @@ public class ConfigFile {
 
 	private Karma karma;
 	private char sep = File.separatorChar;
-	private String[] names = new String[6];
-	private int[] amount = new int[6];
-	private String[] above = new String[6];
-	private ChatColor[] color = new ChatColor[6];
+	private String[] names;
+	private int[] amount;
+	private String[] above;
+	private ChatColor[] color;
 	
 	public ConfigFile(Karma karma) {
 		//creates if not already created
@@ -55,7 +56,7 @@ public class ConfigFile {
 			try {
 			above[i] = data[2];
 			}catch(NullPointerException e) {
-				above[i] = "null";
+				//we don't want to mess with this
 			}
 			color[i] = this.convertStringToColor(data[3]);
 			
@@ -67,22 +68,24 @@ public class ConfigFile {
 		reader.close();
 	}
 	
-	public KarmaGroup[] transferValuesIntoGroups() {
-		KarmaGroup[] groups = new KarmaGroup[6];
+	public PriorityQueue<KarmaGroup> transferValuesIntoGroups() {
+		PriorityQueue<KarmaGroup> groups = new PriorityQueue<KarmaGroup>();
 		int i = 0;
 		//Very Clean and efficient code for dealing with this... Tom can't say otherwise
-		//To expand upon this I will use a vector Type structure, probably a Queue and push and pull the elements
-		//I just got Fing Lazy
-		//Will use a PriorityQueue Implementation
+		KarmaGroup last = null;
 		do {
 			if(i == 0) {
-				groups[i] = new KarmaGroup(names[i], amount[i], null, color[i]);
+				KarmaGroup temp = new KarmaGroup(names[i], amount[i], null, color[i]);
+				groups.offer(temp);
+				last = temp;
 			} else {
-			   groups[i] = new KarmaGroup(names[i], amount[i], groups[i--], color[i]);    
+			    KarmaGroup temp = new KarmaGroup(names[i], amount[i], last, color[i]);
+				groups.offer(temp);
+			    last = temp;
+			    //unfortunatly no way to get around a temporary variable, Don't want to create an object twice when it isn't needed...
 			}
-			
 			i++;
-		} while(i < 6);
+		} while(i < names.length);
 		return groups;
 	}
 	

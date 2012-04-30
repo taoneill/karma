@@ -42,9 +42,9 @@ public class Karma extends JavaPlugin {
 		this.db.initialize();
 		this.setupPermissions();
 		ConfigFile setup = new ConfigFile(this);
-		KarmaGroup[] groups = setup.transferValuesIntoGroups();
-		
-		this.startGroup = groups[6];
+		KarmaGroup[] groups = (KarmaGroup[]) setup.transferValuesIntoGroups().toArray();
+		//the last element will be the last element, assuming it maintains a Queue structure!
+		this.startGroup = groups[groups.length - 1];
 				
         // Register events
         PluginManager manager = this.getServer().getPluginManager();
