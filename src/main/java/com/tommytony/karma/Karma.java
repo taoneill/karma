@@ -41,15 +41,10 @@ public class Karma extends JavaPlugin {
 		this.db = new Database(this);
 		this.db.initialize();
 		this.setupPermissions();
-		
-		KarmaGroup greybeard = new KarmaGroup("greybeard", 2000, null, ChatColor.DARK_GREEN);
-		KarmaGroup moderator = new KarmaGroup("moderator", 1000, greybeard, ChatColor.DARK_AQUA);
-		KarmaGroup minimod = new KarmaGroup("minimod", 500, moderator, ChatColor.AQUA);
-		KarmaGroup zonemaker = new KarmaGroup("zonemaker", 100, minimod, ChatColor.GOLD);
-		KarmaGroup builder = new KarmaGroup("builder", 10, zonemaker, ChatColor.GRAY);
-		KarmaGroup recruit = new KarmaGroup("recruit", 0, builder, ChatColor.LIGHT_PURPLE);
-		
-		this.startGroup = recruit;
+		ConfigFile setup = new ConfigFile(this);
+		KarmaGroup[] groups = (KarmaGroup[]) setup.transferValuesIntoGroups().toArray();
+		//the last element will be the last element, assuming it maintains a Queue structure!
+		this.startGroup = groups[groups.length - 1];
 				
         // Register events
         PluginManager manager = this.getServer().getPluginManager();

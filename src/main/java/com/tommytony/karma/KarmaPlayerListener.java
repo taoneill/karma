@@ -1,5 +1,7 @@
 package com.tommytony.karma;
 
+import java.util.ArrayList;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
@@ -24,11 +26,10 @@ public class KarmaPlayerListener implements Listener {
 	@EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) 
     {
-    	String playerName = event.getPlayer().getName();
-    	KarmaPlayer player = this.karma.getPlayers().get(playerName);
+    	KarmaPlayer player = this.karma.getPlayers().get(event.getPlayer().getName());
     	if (player != null) {
     		this.karma.getKarmaDatabase().put(player);	// save latest changes
-    		this.karma.getPlayers().remove(event.getPlayer().getName());	
+    		this.karma.getPlayers().remove(player.getName());	
     	}
     }
     
