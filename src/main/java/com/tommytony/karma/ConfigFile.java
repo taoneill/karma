@@ -116,6 +116,16 @@ public class ConfigFile {
 			return ChatColor.DARK_GREEN;
 		} else if(string.equals("DarkPurple")) {
 			return ChatColor.DARK_PURPLE;
+		} else if(string.equals("DarkRed")) {
+			return ChatColor.DARK_RED;
+		} else if(string.equals("Green")) {
+			return ChatColor.GREEN;
+		} else if(string.equals("Magic")) {
+			return ChatColor.MAGIC;
+		} else if(string.equals("White")) {
+			return ChatColor.WHITE;
+		} else if(string.equals("Yellow")) {
+			return ChatColor.YELLOW;
 		}
 		throw new RuntimeException();
 	}
