@@ -31,7 +31,7 @@ public class ConfigFile {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		//object construction is finished
+		//object construction is finished, very efficient constructor in that ITS BETTER THAN TOMS CONSTRUCTORS
 	}
 	
 	public void create() throws FileNotFoundException {
@@ -52,7 +52,11 @@ public class ConfigFile {
 			String[] data = reader.nextLine().split(";");
 			names[i] = data[0];
 			amount[i] = Integer.parseInt(data[1]);
+			try {
 			above[i] = data[2];
+			}catch(NullPointerException e) {
+				above[i] = "null";
+			}
 			color[i] = this.convertStringToColor(data[3]);
 			
 			if(color[i] == null) {
@@ -61,6 +65,25 @@ public class ConfigFile {
 			i++;
 		}
 		reader.close();
+	}
+	
+	public KarmaGroup[] transferValuesIntoGroups() {
+		KarmaGroup[] groups = new KarmaGroup[6];
+		int i = 0;
+		//Very Clean and efficient code for dealing with this... Tom can't say otherwise
+		//To expand upon this I will use a vector Type structure, probably a Queue and push and pull the elements
+		//I just got Fing Lazy
+		//Will use a PriorityQueue Implementation
+		do {
+			if(i == 0) {
+				groups[i] = new KarmaGroup(names[i], amount[i], null, color[i]);
+			} else {
+			   groups[i] = new KarmaGroup(names[i], amount[i], groups[i--], color[i]);    
+			}
+			
+			i++;
+		} while(i < 6);
+		return groups;
 	}
 	
 	public ChatColor convertStringToColor(String string) {
@@ -91,7 +114,7 @@ public class ConfigFile {
 		} else if(string.equals("DarkPurple")) {
 			return ChatColor.DARK_PURPLE;
 		}
-		return null;
+		throw new RuntimeException();
 	}
 	
 	
